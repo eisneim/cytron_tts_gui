@@ -2,19 +2,33 @@ import tkinter as tk
 import threading
 import queue
 import sys
+import logging
 
 import random
 import time
 
+import cytronui as cui
+
+# ----------- configure logging ---------
+log = logging.getLogger("cytron")
+log.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+# %(name)s -
+formatter = logging.Formatter('%(asctime)s %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+
+log.addHandler(ch)
+# ------  end of configure logging ---------
 
 class GuiPart:
-  def __init__(self, master, appQueue, endCommand):
+  def __init__(self, master, appQueue, dispatch):
     self.queue = appQueue
     self.master = master
+
+    master.title("Simple TTS")
     # set up ui
-    uu = tk.Button(master, text="Done", command=endCommand)
-    uu.pack(padx=10, pady=10)
-    tk.Entry(master).pack()
+    self.cytronUI = cui.CytronTTS(master, dispatch)
 
   def processIncoming(self):
     """Handle all messages currently in the queue, if any."""
@@ -24,7 +38,9 @@ class GuiPart:
         # Check contents of message and do whatever is needed. As a
         # simple test, print it (in real life, you would
         # suitably update the GUI's display in a richer fashion).
-        print(msg)
+        # print(msg)
+        self.cytronUI.receive(msg)
+
       except queue.Empty:
         # just on general principles, although we don't
         # expect this branch to be taken in this case
@@ -47,7 +63,7 @@ class ThreadedClient:
     self.queue = queue.Queue()
 
     # setup the GUI part
-    self.gui = GuiPart(master, self.queue, self.endApplication)
+    self.gui = GuiPart(master, self.queue, self.dispatch)
 
     # Set up the thread to do asynchronous I/O
     # More threads can also be created and used, if necessary
@@ -58,6 +74,13 @@ class ThreadedClient:
     # Start the periodic call in the GUI to check if the queue contains
     # anything
     self.periodicCall()
+
+  def dispatch(self, action):
+    if action["type"] == "END_APP":
+      self.endApplication()
+    else:
+      log.info("new action: {}".format(action))
+
 
   def periodicCall(self):
     """
