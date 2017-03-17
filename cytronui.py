@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 import logging
 
+from uiHandlers import handlers
+
 log = logging.getLogger("cytron")
 
 
@@ -19,17 +21,24 @@ class CytronTTS:
     pages = (ConfigPage, MainPage)
     for ff in pages:
       frame = ff(master, self)
-      self.frames[ff] = frame
+      # self.frames[ff] = frame
+      self.frames[ff.__name__] = frame
       frame.grid(row=0, column=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
     self.show_frame(ConfigPage)
 
   def show_frame(self, cont):
-    frame = self.frames[cont]
+    name = cont if type(cont) == str else cont.__name__
+    frame = self.frames[name]
     frame.tkraise()
 
   def receive(self, msg):
     log.debug("get message from worker: {}".format(msg))
+    mtype = msg["type"]
+    if mtype in handlers:
+      handlers[mtype](self, msg["payload"], msg)
+    else:
+      log.info("unhandled ui msg: {}".format(msg))
 
 
 class ConfigPage(tk.Frame):
@@ -75,7 +84,7 @@ class ConfigPage(tk.Frame):
       }
     })
     # hide comfirm button should show load animation
-    self._confirm.grid_forget()
+    self._confirm.grid_remove()
 
 class MainPage(tk.Frame):
   def __init__(self, parent, controller):

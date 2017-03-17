@@ -4,27 +4,27 @@ import logging
 log = logging.getLogger("cytron")
 
 URL_TOKEN = "https://openapi.baidu.com/oauth/2.0/token?\
-  grant_type=client_credentials&client_id={}&\
-  client_secret={}&"
+grant_type=client_credentials&client_id={}&\
+client_secret={}&"
 
 URL_TARGET = "http://tsn.baidu.com/text2audio"
 # default settings
 LAN = "zh"
-CTP = 1 # client type, web = 1
-CUID = None # client user id
-SPD = 5 # speed: 0-9
-PIT = 5 # pitch: 0-9
-VOL = 5 # volumn: 0-9
-PERSON = 1 # 发音人选择，取值 0-1 ;0 为女声，1 为男声，默认为女声
+CTP = 1  # client type, web = 1
+CUID = None  # client user id
+SPD = 5  # speed: 0-9
+PIT = 5  # pitch: 0-9
+VOL = 5  # volumn: 0-9
+PERSON = 1  # 发音人选择，取值 0-1 ;0 为女声，1 为男声，默认为女声
 
 
 class Baidutts:
-  def __init__(self, appid, appsecret):
+  def __init__(self, appid, appsecret, token=None):
     self.appid = appid
     self.secret = appsecret
-    self.token = None
+    self.token = token
 
-  def get_access_token(id, secret):
+  def get_access_token(self):
     """
     {
     6. "access_token": "1.a6b7dbd428f731035f771b8d*******",
@@ -35,12 +35,21 @@ class Baidutts:
     11. "session_secret": "248APxvxjCZ0VEC********aK4oZExMB ",
     12. }
     """
-    url = URL_TOKEN.format(id, secret)
+    url = URL_TOKEN.format(self.appid, self.secret)
+    log.info("request: {}".format(url))
     r = requests.get(url)
-    return r.json()
+    self.tokenRes = r.json()
+    if "error_description" in self.tokenRes:
+      return (self.tokenRes["error_description"], False)
 
+    self.token = self.tokenRes["access_token"]
+    return (None, self.tokenRes)
 
-  def t2a(tex, tok, lan=LAN, cuid=CUID, ctp=CTP, spd=SPD, pit=PIT, per=PERSON, vol=VOL):
+  def t2a(self, tex, tok,
+    lan=LAN, cuid=CUID, ctp=CTP, spd=SPD, pit=PIT, per=PERSON, vol=VOL):
+    if not tok:
+      tok = self.token
+
     assert len(tex) > 0
     # make sure tex is less than 1024 bites
     assert len(tex.encode("utf-8")) < 1024

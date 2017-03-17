@@ -1,4 +1,8 @@
 from tkinter import *
+import os
+
+print(os.path.abspath(__file__))
+print(os.path.dirname(os.path.abspath(__file__)))
 
 class Application(Frame):
   def say_hi(self):
