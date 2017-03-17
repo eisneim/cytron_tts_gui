@@ -8,6 +8,8 @@ import random
 import time
 
 import cytronui as cui
+# from baidutts import Baidutts
+from actionHandlers import handlers
 
 # ----------- configure logging ---------
 log = logging.getLogger("cytron")
@@ -27,6 +29,17 @@ class GuiPart:
     self.master = master
 
     master.title("Simple TTS")
+    master.configure(bg="red")
+
+    master.grid_rowconfigure(0, weight=1)
+    master.grid_columnconfigure(0, weight=1)
+
+
+    # container = tk.Frame(master)
+    # container.pack(side="top", fill="both", expand=True)
+    # container.grid_rowconfigure(0, weight=1)
+    # container.grid_columnconfigure(0, weight=1)
+
     # set up ui
     self.cytronUI = cui.CytronTTS(master, dispatch)
 
@@ -53,33 +66,39 @@ class ThreadedClient:
   endApplication could reside in the GUI part, but putting them here
   means that you have all the thread controls in a single place.
   """
-  def __init__(self, master):
+  def __init__(self, root):
     """
     Start the GUI and the asynchronous threads. We are in the main
     (original) thread of the application, which will later be used by
     the GUI as well. We spawn a new thread for the worker (I/O).
     """
-    self.master = master
+    self.root = root
     self.queue = queue.Queue()
 
     # setup the GUI part
-    self.gui = GuiPart(master, self.queue, self.dispatch)
+    self.gui = GuiPart(root, self.queue, self.dispatch)
 
     # Set up the thread to do asynchronous I/O
     # More threads can also be created and used, if necessary
     self.running = True
-    self.thread1 = threading.Thread(target=self.workerThread1)
-    self.thread1.start()
+
+    # self.thread1 = threading.Thread(target=self.workerThread1)
+    # self.thread1.start()
 
     # Start the periodic call in the GUI to check if the queue contains
     # anything
     self.periodicCall()
 
   def dispatch(self, action):
-    if action["type"] == "END_APP":
-      self.endApplication()
+    atype = action["type"]
+    print("action type: {}".format(atype))
+    if atype in handlers:
+      fn = handlers[atype]
+      # create a new thread for this handler
+      tt = threading.Thread(target=fn, args=(self, action["payload"], action))
+      tt.start()
     else:
-      log.info("new action: {}".format(action))
+      log.info("unhandled Action type: {}".format(action))
 
 
   def periodicCall(self):
@@ -92,7 +111,7 @@ class ThreadedClient:
       # some cleanup before actually shutting it down.
       sys.exit(1)
 
-    self.master.after(200, self.periodicCall)
+    self.root.after(200, self.periodicCall)
 
   def workerThread1(self):
     """
@@ -113,6 +132,8 @@ class ThreadedClient:
 
   def endApplication(self):
     self.running = 0
+
+
 
 
 root = tk.Tk()

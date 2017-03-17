@@ -61,23 +61,23 @@ class Baidutts:
     if rr.status_code == 500:
       log.error("不支持输入")
       return
-    else if rr.status_code == 501:
+    elif rr.status_code == 501:
       log.error("输入参数不正确")
-    else if rr.status_code == 502:
+    elif rr.status_code == 502:
       log.error("token 验证失败")
-    else if rr.status_code == 503:
+    elif rr.status_code == 503:
       log.error("合成后端错误")
 
     ctype = rr.headers["content-type"]
     log.info('response type: {}'.format(ctype))
     if ctype.find("audio"):
       log.info("deal with raw audio file")
-    else if ctype.find("json"):
+    elif ctype.find("json"):
       log.info("show response error: {}".format(rr.text))
 
 
 
-if __name__ = "__main__":
+if __name__ == "__main__":
   log.basicConfig(level=logging.DEBUG)
   log.info("Started")
   tts = Baidutts("", "")
