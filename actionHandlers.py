@@ -1,4 +1,5 @@
 from baidutts import Baidutts
+import time
 
 ttsInstance = None
 
@@ -18,6 +19,15 @@ def get_token(ctx, payload, action):
       "payload": err
     })
   else:
+    # save appid and secret
+    ctx.config.set("appid", payload["appid"])
+    ctx.config.set("appsecret", payload["appsecret"])
+    ctx.config.set("token", data["access_token"])
+    expireTime = time.time() + data["expires_in"]
+    ctx.config.set("expireTime", expireTime)
+    # save to local file
+    ctx.config.save()
+
     ctx.queue.put({
       "type": "GET_TOKEN",
       "payload": data

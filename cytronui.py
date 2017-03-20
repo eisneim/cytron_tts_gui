@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import logging
+import time
 
 from uiHandlers import handlers
 
@@ -8,10 +9,10 @@ log = logging.getLogger("cytron")
 
 
 class CytronTTS:
-  def __init__(self, master, dispatch):
+  def __init__(self, master, ctx):
     # reference to the dispatch function
-    self.dispatch = dispatch
-
+    self.dispatch = ctx.dispatch
+    self.ctx = ctx
     # container.pack(side="top", fill="both", expand=True, bg="#efe")
     # _endAction = { "type": "END_APP" }
     # uu = tk.Button(master, text="Done", command=lambda: dispatch(_endAction))
@@ -25,7 +26,13 @@ class CytronTTS:
       self.frames[ff.__name__] = frame
       frame.grid(row=0, column=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
-    self.show_frame(ConfigPage)
+    # check if token expires
+    if ctx.config.get("expireTime") > time.time():
+      log.info("token not expired, show main page")
+      self.show_frame(MainPage)
+    else:
+      log.info("token expired, show init page")
+      self.show_frame(ConfigPage)
 
   def show_frame(self, cont):
     name = cont if type(cont) == str else cont.__name__
@@ -63,6 +70,10 @@ class ConfigPage(tk.Frame):
 
     self._appsecret = tk.Entry(self)
     self._appsecret.grid(row=2, column=1, sticky="w")
+    # set default value
+    if self.controller.ctx.config.get("appid"):
+      self._appid.configure(text=self.controller.ctx.config.get("appid"))
+      self._appsecret.configure(text=self.controller.ctx.config.get("appid"))
 
     self._confirm = tk.Button(self, text="Confirm",
       command=self.getToken)
@@ -91,17 +102,53 @@ class MainPage(tk.Frame):
     self.controller = controller
     tk.Frame.__init__(self, parent)
 
-    label = tk.Label(self, text="Main page")
-    label.pack(padx=5, pady=5)
+    self.grid_rowconfigure(0, weight=1)
+    self.grid_columnconfigure(0, weight=1)
 
-    btn1 = tk.Button(self, text="start page",
-      command=lambda: controller.show_frame(ConfigPage))
-    btn1.pack()
-
-
-
-
+    self._text = tk.Text(self, highlightthickness=1)
+    self._text.grid(row=0,
+      column=0,
+      sticky=tk.N+tk.E+tk.S+tk.W,
+      padx=5, pady=5)
 
 
+    # --------------- second column -----
+    _rightSection = tk.Frame(self)
+    _rightSection.grid(row=0, column=1, padx=5, pady=5, sticky=tk.N + tk.S)
+
+    self._file = tk.Button(_rightSection, text="select .txt file")
+    self._file.grid(row=0)
+
+    self._destFolder = tk.Button(_rightSection, text="dest folder")
+    self._destFolder.grid(row=1)
+
+    _lframe = tk.LabelFrame(_rightSection, text="Audio Setting")
+    _lframe.grid(row=2)
+
+    self._spd = tk.Scale(_lframe, from_=0, to=10, orient="horizontal", label="speed")
+    self._spd.set(5)
+    self._spd.grid(row=1, columnspan=2)
+
+    self._pit = tk.Scale(_lframe, from_=0, to=10, orient="horizontal", label="pitch")
+    self._pit.set(5)
+    self._pit.grid(row=3, columnspan=2)
+
+    self._vol = tk.Scale(_lframe, from_=0, to=10, orient="horizontal", label="volume")
+    self._vol.set(5)
+    self._vol.grid(row=5, columnspan=2)
+
+    self._per = tk.IntVar()
+    tk.Radiobutton(_lframe, text="male",
+      value=0,
+      variable=self._per).grid(row=6)
+    tk.Radiobutton(_lframe, text="female",
+      value=1,
+      variable=self._per).grid(row=6, column=1)
+
+    # -=----------
+
+    self._confirm = tk.Button(_rightSection,
+      text="Generate Mp3")
+    self._confirm.grid(row=7, sticky="s", pady=5)
 
 

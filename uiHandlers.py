@@ -5,14 +5,15 @@ import logging
 log = logging.getLogger("cytron")
 
 
-def get_token(ctx, payload, msg):
+def get_token(ctrl, payload, msg):
   log.info("get token success: {}".format(payload["access_token"]))
-  ctx.show_frame("MainPage")
+  # should save this token to config
+  ctrl.show_frame("MainPage")
 
 
-def get_token_err(ctx, payload, msg):
+def get_token_err(ctrl, payload, msg):
   messagebox.showerror("error", payload)
-  ctx.frames["ConfigPage"]._confirm.grid()
+  ctrl.frames["ConfigPage"]._confirm.grid()
 
 
 handlers = {

@@ -2,11 +2,13 @@ import tkinter as tk
 import threading
 import queue
 import sys
+import os
 import logging
 
 import random
 import time
 
+from config import CytronConfig
 import cytronui as cui
 # from baidutts import Baidutts
 from actionHandlers import handlers
@@ -24,8 +26,8 @@ log.addHandler(ch)
 # ------  end of configure logging ---------
 
 class GuiPart:
-  def __init__(self, master, appQueue, dispatch):
-    self.queue = appQueue
+  def __init__(self, master, ctx, dispatch):
+    self.queue = ctx.queue
     self.master = master
 
     master.title("Simple TTS")
@@ -41,7 +43,7 @@ class GuiPart:
     # container.grid_columnconfigure(0, weight=1)
 
     # set up ui
-    self.cytronUI = cui.CytronTTS(master, dispatch)
+    self.cytronUI = cui.CytronTTS(master, ctx)
 
   def processIncoming(self):
     """Handle all messages currently in the queue, if any."""
@@ -75,8 +77,10 @@ class ThreadedClient:
     self.root = root
     self.queue = queue.Queue()
 
+    self.config = CytronConfig()
+
     # setup the GUI part
-    self.gui = GuiPart(root, self.queue, self.dispatch)
+    self.gui = GuiPart(root, self, self.dispatch)
 
     # Set up the thread to do asynchronous I/O
     # More threads can also be created and used, if necessary

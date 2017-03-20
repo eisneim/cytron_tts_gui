@@ -3,6 +3,6 @@ node_modules
 .nodemonignore
 .sass-cache/
 .bower-*/
-
+config.json
 output/
 __pycache__
