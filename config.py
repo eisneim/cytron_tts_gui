@@ -1,13 +1,14 @@
 import os
 from os.path import join, exists
 import json
-
+import uuid
 
 DEFAULTCONF = {
   "token": None,
   "appid": None,
   "appsecret": None,
   "expireTime": 0,
+  "cuid": None
 }
 
 
@@ -23,6 +24,10 @@ class CytronConfig:
     else:
       with open(self.configPath, "r") as fin:
         self.data = json.load(fin)
+    # check if cuid is set
+    if not self.data["cuid"]:
+      # https://docs.python.org/3/library/uuid.html
+      self.data["cuid"] = str(uuid.uuid1())
 
   def save(self):
     jsonStr = json.dumps(self.data)

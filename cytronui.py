@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import tkinter.filedialog as fdialog
 import logging
 import time
 
@@ -52,7 +53,7 @@ class ConfigPage(tk.Frame):
   def __init__(self, parent, controller):
     self.controller = controller
     tk.Frame.__init__(self, parent)
-    self.configure(bg="#efe")
+    # self.configure(bg="#efe")
     self.grid_rowconfigure(0, weight=1)
     # self.grid_rowconfigure(1, weight=1)
     # self.grid_rowconfigure(2, weight=1)
@@ -105,25 +106,33 @@ class MainPage(tk.Frame):
     self.grid_rowconfigure(0, weight=1)
     self.grid_columnconfigure(0, weight=1)
 
-    self._text = tk.Text(self, highlightthickness=1)
+    self._text = tk.Text(self, highlightthickness=1, bd=1, bg="#efefef")
     self._text.grid(row=0,
       column=0,
       sticky=tk.N+tk.E+tk.S+tk.W,
       padx=5, pady=5)
 
+    self._text.insert("end", "欲穷千里目，更上一层楼")
 
     # --------------- second column -----
     _rightSection = tk.Frame(self)
     _rightSection.grid(row=0, column=1, padx=5, pady=5, sticky=tk.N + tk.S)
 
-    self._file = tk.Button(_rightSection, text="select .txt file")
+    self._file = tk.Button(_rightSection,
+      text="select text file",
+      command=self.addTextFromFile)
     self._file.grid(row=0)
 
-    self._destFolder = tk.Button(_rightSection, text="dest folder")
+    self._destFolder = tk.Button(_rightSection,
+      text="dest folder",
+      command=self.setDestFolder)
     self._destFolder.grid(row=1)
 
+    self._destFolderEntry = tk.Entry(_rightSection, width=15)
+    self._destFolderEntry.grid(row=2)
+
     _lframe = tk.LabelFrame(_rightSection, text="Audio Setting")
-    _lframe.grid(row=2)
+    _lframe.grid(row=3)
 
     self._spd = tk.Scale(_lframe, from_=0, to=10, orient="horizontal", label="speed")
     self._spd.set(5)
@@ -138,17 +147,71 @@ class MainPage(tk.Frame):
     self._vol.grid(row=5, columnspan=2)
 
     self._per = tk.IntVar()
-    tk.Radiobutton(_lframe, text="male",
+    tk.Radiobutton(_lframe, text="Female",
       value=0,
       variable=self._per).grid(row=6)
-    tk.Radiobutton(_lframe, text="female",
+    tk.Radiobutton(_lframe, text="Male",
       value=1,
       variable=self._per).grid(row=6, column=1)
 
     # -=----------
 
     self._confirm = tk.Button(_rightSection,
-      text="Generate Mp3")
-    self._confirm.grid(row=7, sticky="s", pady=5)
+      text="Generate Mp3", command=self.sendReuqest)
+    self._confirm.grid(row=4, sticky="s", pady=5)
+    # notify text
+    self._sendingLabel = tk.Label(_rightSection, text="Requesting...")
+    self._sendingLabel.grid(row=5)
+    self._sendingLabel.grid_remove()
 
+  def showRequesting(self, isDone=False):
+    if not isDone:
+      self._sendingLabel.grid()
+      self._confirm.grid_remove()
+    else:
+      self._sendingLabel.grid_remove()
+      self._confirm.grid()
 
+  def setDestFolder(self):
+    dirPath = fdialog.askdirectory()
+    if not dirPath:
+      return
+    log.debug("set destDir: {}".format(dirPath))
+    self._destFolderEntry.insert(0, dirPath)
+
+  def addTextFromFile(self):
+    filePath = fdialog.askopenfilename()
+    if not filePath:
+      return
+    log.debug("input text file: {}".format(filePath))
+    with open(filePath, "r") as fin:
+      text = fin.read()
+    self._text.insert("end", text)
+
+  def sendReuqest(self):
+    # http://stackoverflow.com/questions/14824163/how-to-get-the-input-from-the-tkinter-text-box-widget
+    # line 1, 0 char; The -1c deletes 1 character; end contains a new line char
+    text = self._text.get("1.0", 'end-1c')
+    if not text or len(text) < 1:
+      messagebox.showerror("error", "text input is required")
+      return
+    # read all settings
+    spd = self._spd.get()
+    pit = self._pit.get()
+    vol = self._vol.get()
+    per = self._per.get()
+    log.debug("text len: {} spd:{} pid:{} vol:{} per:{}".format(
+      len(text), spd, pit, vol, per))
+
+    action = {
+      "type": "POST_REQUEST",
+      "payload": {
+        "text": text,
+        "spd": spd,
+        "pit": pit,
+        "vol": vol,
+        "per": per,
+      }
+    }
+    self.controller.dispatch(action)
+    self.showRequesting()

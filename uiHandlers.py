@@ -16,7 +16,18 @@ def get_token_err(ctrl, payload, msg):
   ctrl.frames["ConfigPage"]._confirm.grid()
 
 
+def post_request_error(ctrl, payload, msg):
+  log.info("post_request_error: {}".format(payload))
+  messagebox.showerror("error", payload)
+
+
+def post_request_done(ctrl, payload, msg):
+  log.info("post_request_done")
+  # should restore ui
+
 handlers = {
   "GET_TOKEN_ERROR": get_token_err,
   "GET_TOKEN": get_token,
+  "POST_REQUEST_DONE": post_request_done,
+  "POST_REQUEST_ERROR": post_request_error,
 }

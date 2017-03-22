@@ -1,5 +1,6 @@
 from baidutts import Baidutts
 import time
+import shutil
 
 ttsInstance = None
 
@@ -30,11 +31,46 @@ def get_token(ctx, payload, action):
 
     ctx.queue.put({
       "type": "GET_TOKEN",
-      "payload": data
+      "payload": data,
     })
+
+
+def postRequest(ctx, payload, action):
+  global ttsInstance
+  if not ttsInstance:
+    ttsInstance = Baidutts(ctx.config.get("appid"), ctx.config.get("appsecret"))
+
+  token = ctx.config.get("token")
+  cuid = ctx.config.get("cuid")
+  err, res = ttsInstance.t2a(payload["text"],
+    token,
+    cuid=cuid,
+    spd=payload["spd"],
+    pit=payload["pit"],
+    per=payload["per"],
+    vol=payload["vol"])
+  if err:
+    ctx.queue.put({
+      "type": "POST_REQUEST_ERROR",
+      "payload": err,
+    })
+  # should save to mp3 file
+  with open("test.mp3", "wb") as fout:
+    # res.raw.decode_content = True
+    shutil.copyfileobj(res.raw, fout)
+
+  ctx.queue.put({
+    "type": "POST_REQUEST",
+    "payload": res,
+  })
+
+
+
+
 
 
 handlers = {
   "END_APP": end_app,
   "GET_TOKEN": get_token,
+  "POST_REQUEST": postRequest,
 }

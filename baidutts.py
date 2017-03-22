@@ -66,24 +66,32 @@ class Baidutts:
       "tok": tok,
     }
     # data will automatically be form-encoded when the request is made
-    rr = requests.post(URL_TARGET, data=payload)
+    rr = requests.post(URL_TARGET, data=payload, stream=True)
     if rr.status_code == 500:
-      log.error("不支持输入")
-      return
+      msg = "不支持输入"
+      log.error(msg)
+      return (msg, None)
     elif rr.status_code == 501:
-      log.error("输入参数不正确")
+      msg = "输入参数不正确"
+      log.error(msg)
+      return (msg, None)
     elif rr.status_code == 502:
-      log.error("token 验证失败")
+      msg = "token 验证失败"
+      log.error(msg)
+      return (msg, None)
     elif rr.status_code == 503:
-      log.error("合成后端错误")
+      msg = "合成后端错误"
+      log.error(msg)
+      return (msg, None)
 
     ctype = rr.headers["content-type"]
     log.info('response type: {}'.format(ctype))
-    if ctype.find("audio"):
+    if rr.status_code == 200:
       log.info("deal with raw audio file")
-    elif ctype.find("json"):
+      return (None, rr)
+    else:
       log.info("show response error: {}".format(rr.text))
-
+      return (rr.text, None)
 
 
 if __name__ == "__main__":
