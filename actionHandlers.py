@@ -1,6 +1,8 @@
 from baidutts import Baidutts
 import time
 import shutil
+from os.path import join
+import uuid
 
 ttsInstance = None
 
@@ -54,17 +56,21 @@ def postRequest(ctx, payload, action):
       "type": "POST_REQUEST_ERROR",
       "payload": err,
     })
+
+  fileName = str(uuid.uuid1()) + ".mp3"
+  filePath = join(payload["dest"], fileName)
   # should save to mp3 file
-  with open("test.mp3", "wb") as fout:
+  with open(filePath, "wb") as fout:
     # res.raw.decode_content = True
     shutil.copyfileobj(res.raw, fout)
 
   ctx.queue.put({
-    "type": "POST_REQUEST",
-    "payload": res,
+    "type": "POST_REQUEST_DONE",
+    "payload": {
+      "fileName": fileName,
+      "filePatth": filePath
+    },
   })
-
-
 
 
 

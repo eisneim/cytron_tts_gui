@@ -147,6 +147,7 @@ class MainPage(tk.Frame):
     self._vol.grid(row=5, columnspan=2)
 
     self._per = tk.IntVar()
+    self._per.set(1)
     tk.Radiobutton(_lframe, text="Female",
       value=0,
       variable=self._per).grid(row=6)
@@ -178,6 +179,7 @@ class MainPage(tk.Frame):
       return
     log.debug("set destDir: {}".format(dirPath))
     self._destFolderEntry.insert(0, dirPath)
+    self.dirPath = dirPath
 
   def addTextFromFile(self):
     filePath = fdialog.askopenfilename()
@@ -195,6 +197,11 @@ class MainPage(tk.Frame):
     if not text or len(text) < 1:
       messagebox.showerror("error", "text input is required")
       return
+    # make sure dest folder is set
+    if not hasattr(self, "dirPath"):
+      messagebox.showerror("error", "please set destination folder first")
+      return
+
     # read all settings
     spd = self._spd.get()
     pit = self._pit.get()
@@ -211,6 +218,7 @@ class MainPage(tk.Frame):
         "pit": pit,
         "vol": vol,
         "per": per,
+        "dest": self.dirPath,
       }
     }
     self.controller.dispatch(action)

@@ -24,6 +24,7 @@ def post_request_error(ctrl, payload, msg):
 def post_request_done(ctrl, payload, msg):
   log.info("post_request_done")
   # should restore ui
+  ctrl.frames["MainPage"].showRequesting(True)
 
 handlers = {
   "GET_TOKEN_ERROR": get_token_err,
