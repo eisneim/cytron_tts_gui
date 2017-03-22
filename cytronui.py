@@ -3,6 +3,8 @@ from tkinter import messagebox
 import tkinter.filedialog as fdialog
 import logging
 import time
+import os
+
 
 from uiHandlers import handlers
 
@@ -34,6 +36,7 @@ class CytronTTS:
     else:
       log.info("token expired, show init page")
       self.show_frame(ConfigPage)
+
 
   def show_frame(self, cont):
     name = cont if type(cont) == str else cont.__name__
@@ -130,6 +133,11 @@ class MainPage(tk.Frame):
 
     self._destFolderEntry = tk.Entry(_rightSection, width=15)
     self._destFolderEntry.grid(row=2)
+    # set default dest folder to downloads if not on windows
+    if os.name != "nt":
+      home = os.path.expanduser("~")
+      self.dirPath = os.path.join(home, "Downloads")
+      self._destFolderEntry.insert(0, self.dirPath)
 
     _lframe = tk.LabelFrame(_rightSection, text="Audio Setting")
     _lframe.grid(row=3)
@@ -178,6 +186,7 @@ class MainPage(tk.Frame):
     if not dirPath:
       return
     log.debug("set destDir: {}".format(dirPath))
+    self._destFolderEntry.delete(0, "end")
     self._destFolderEntry.insert(0, dirPath)
     self.dirPath = dirPath
 
