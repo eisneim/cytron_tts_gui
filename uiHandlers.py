@@ -25,6 +25,7 @@ def post_request_done(ctrl, payload, msg):
   log.info("post_request_done")
   # should restore ui
   ctrl.frames["MainPage"].showRequesting(True)
+  messagebox.showinfo("Done", "mp3 file saved in: {}".format(payload["filePath"]))
 
 handlers = {
   "GET_TOKEN_ERROR": get_token_err,
