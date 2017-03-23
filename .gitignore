@@ -5,4 +5,6 @@ node_modules
 .bower-*/
 config.json
 output/
+build/
+dist/
 __pycache__

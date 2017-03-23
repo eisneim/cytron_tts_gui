@@ -2,6 +2,7 @@ import os
 from os.path import join, exists
 import json
 import uuid
+import re
 
 DEFAULTCONF = {
   "token": None,
@@ -15,8 +16,15 @@ DEFAULTCONF = {
 class CytronConfig:
   def __init__(self):
     self.rootDir = os.path.dirname(os.path.abspath(__file__))
-    # check if config.json exists
-    self.configPath = join(self.rootDir, "config.json")
+    # check if inside a .app bundle
+    match = re.search(r"/[^/]*\.app/", self.rootDir)
+    if match:
+      # '/Users/eisneim/www/pyProject/audioGenerator/python/dist/cytrontts.app/'
+      self.rootDir = self.rootDir[0:match.end()]
+      self.configPath = join(self.rootDir, "Contents/Resources/config.json")
+    else:
+      # check if config.json exists
+      self.configPath = join(self.rootDir, "config.json")
 
     if not exists(self.configPath):
       self.data = DEFAULTCONF
