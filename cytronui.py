@@ -4,6 +4,7 @@ import tkinter.filedialog as fdialog
 import logging
 import time
 import os
+from sys import platform
 
 
 from uiHandlers import handlers
@@ -36,12 +37,39 @@ class CytronTTS:
     else:
       log.info("token expired, show init page")
       self.show_frame(ConfigPage)
+    # --------- setup menu -------
+    _menubar = tk.Menu(master)
+    if platform == 'darwin': # for mac only
+      _appMenu = tk.Menu(_menubar, name="apple")
+      _menubar.add_cascade(menu=_appMenu)
+      _appMenu.add_command(label="About CytronTTS", command=self.showAbout)
+      # _appMenu.add_separator()
+      # master.createcommand('tk::mac::ShowPreferences', do_preferences)
 
+
+    _filemenu = tk.Menu(_menubar)
+    _menubar.add_cascade(label="File", menu=_filemenu)
+
+    _filemenu.add_command(label="Load Text File..",
+      command=self.frames["MainPage"].addTextFromFile)
+    _filemenu.add_command(label="Destination Folder",
+      command=self.frames["MainPage"].setDestFolder)
+    _filemenu.add_separator()
+    _filemenu.add_command(label="Exit", command=master.quit)
+
+    master.config(menu=_menubar)
 
   def show_frame(self, cont):
     name = cont if type(cont) == str else cont.__name__
     frame = self.frames[name]
     frame.tkraise()
+
+  def showAbout(self):
+    messagebox.showinfo("about CytronTTS", """
+version: 0.1.0
+auhtor: Eisneim Terry<eisneim1@gmail.com>
+github: https://github.com/eisneim/cytron_tts_gui
+      """)
 
   def receive(self, msg):
     log.debug("get message from worker: {}".format(msg))

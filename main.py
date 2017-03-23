@@ -30,7 +30,7 @@ class GuiPart:
     self.queue = ctx.queue
     self.master = master
 
-    master.title("Simple TTS")
+    master.title("CytronTTS")
     master.configure(bg="red")
 
     master.grid_rowconfigure(0, weight=1)
