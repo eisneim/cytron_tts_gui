@@ -52,7 +52,7 @@ class Baidutts:
 
     assert len(tex) > 0
     # make sure tex is less than 1024 bites
-    assert len(tex.encode("utf-8")) < 1024
+    # assert len(tex.encode("utf-8")) < 1024
 
     payload = {
       "tex": tex,
@@ -66,7 +66,12 @@ class Baidutts:
       "tok": tok,
     }
     # data will automatically be form-encoded when the request is made
-    rr = requests.post(URL_TARGET, data=payload, stream=True)
+    try:
+      rr = requests.post(URL_TARGET, data=payload, stream=True)
+    except requests.exceptions.RequestException as e:
+      msg = "Connection timeout please retry"
+      return (msg, None)
+
     if rr.status_code == 500:
       msg = "不支持输入"
       log.error(msg)
@@ -81,6 +86,10 @@ class Baidutts:
       return (msg, None)
     elif rr.status_code == 503:
       msg = "合成后端错误"
+      log.error(msg)
+      return (msg, None)
+    elif rr.status_code == 404:
+      msg = "合成后端地址错误"
       log.error(msg)
       return (msg, None)
 

@@ -79,7 +79,7 @@ def postRequest(ctx, payload, action):
   else:
     textList = splitText(tex, 1024)
     rawResList = []
-    for tx in textList:
+    for idx, tx in enumerate(textList):
       err, res = ttsInstance.t2a(tx,
         token,
         cuid=cuid,
@@ -91,6 +91,10 @@ def postRequest(ctx, payload, action):
         return (err, False)
       # save raw resonponse
       rawResList.append(res)
+      ctx.queue.put({
+        "type": "POST_REQUEST_PROGRESS",
+        "payload": (idx + 1) / len(textList),
+      })
     # concat all mp3 binary
     with open(filePath, "wb") as fout:
       # res.raw.decode_content = True

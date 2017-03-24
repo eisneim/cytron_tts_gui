@@ -183,23 +183,32 @@ class MainPage(tk.Frame):
     self._vol.grid(row=5, columnspan=2)
 
     self._per = tk.IntVar()
-    self._per.set(1)
+    self._per.set(3)
     tk.Radiobutton(_lframe, text="Female",
       value=0,
       variable=self._per).grid(row=6)
     tk.Radiobutton(_lframe, text="Male",
       value=1,
       variable=self._per).grid(row=6, column=1)
-
+    tk.Radiobutton(_lframe, text="Better Male",
+      value=3,
+      variable=self._per).grid(row=7, column=0)
+    tk.Radiobutton(_lframe, text="Better Female",
+      value=4,
+      variable=self._per).grid(row=7, column=1)
     # -=----------
 
     self._confirm = tk.Button(_rightSection,
       text="Generate Mp3", command=self.sendReuqest)
     self._confirm.grid(row=4, sticky="s", pady=5)
     # notify text
-    self._sendingLabel = tk.Label(_rightSection, text="Requesting...")
+    self._sendingLabel = tk.Label(_rightSection, text="Generating...")
     self._sendingLabel.grid(row=5)
     self._sendingLabel.grid_remove()
+
+    self._progress = tk.Label(_rightSection)
+    self._progress.grid(row=6)
+    self._progress.grid_remove()
 
   def showRequesting(self, isDone=False):
     if not isDone:
@@ -225,7 +234,16 @@ class MainPage(tk.Frame):
     log.debug("input text file: {}".format(filePath))
     with open(filePath, "r") as fin:
       text = fin.read()
+
+    self._text.delete("1.0", "end")
     self._text.insert("end", text)
+
+  def updateProgress(self, percentage):
+    if not self._progress.winfo_manager():
+      self._progress.grid()
+
+    tex = "{:.2f}%".format(percentage * 100)
+    self._progress.configure(text=tex)
 
   def sendReuqest(self):
     # http://stackoverflow.com/questions/14824163/how-to-get-the-input-from-the-tkinter-text-box-widget
