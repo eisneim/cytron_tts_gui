@@ -72,29 +72,34 @@ class Baidutts:
       msg = "Connection timeout please retry"
       return (msg, None)
 
-    if rr.status_code == 500:
+    ctype = rr.headers["content-type"]
+    isJson = ctype.find("json") >= 0
+    jsonRes = { "err_no": None, "err_msg": "unknow Error" }
+    if isJson:
+      jsonRes = rr.json()
+
+    if rr.status_code == 500 or jsonRes["err_no"] ==500:
       msg = "不支持输入"
       log.error(msg)
       return (msg, None)
-    elif rr.status_code == 501:
+    elif rr.status_code == 501 or jsonRes["err_no"] ==501:
       msg = "输入参数不正确"
       log.error(msg)
       return (msg, None)
-    elif rr.status_code == 502:
+    elif rr.status_code == 502 or jsonRes["err_no"] ==502:
       msg = "token 验证失败"
       log.error(msg)
       return (msg, None)
-    elif rr.status_code == 503:
+    elif rr.status_code == 503 or jsonRes["err_no"] ==503:
       msg = "合成后端错误"
       log.error(msg)
       return (msg, None)
-    elif rr.status_code == 404:
+    elif rr.status_code == 404 or jsonRes["err_no"] ==404:
       msg = "合成后端地址错误"
       log.error(msg)
       return (msg, None)
 
-    ctype = rr.headers["content-type"]
-    log.info('response type: {}'.format(ctype))
+    log.info('response type: {} {}'.format(ctype, rr.status_code))
     if rr.status_code == 200:
       log.info("deal with raw audio file")
       return (None, rr)

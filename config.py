@@ -18,10 +18,12 @@ class CytronConfig:
     self.rootDir = os.path.dirname(os.path.abspath(__file__))
     # check if inside a .app bundle
     match = re.search(r"/[^/]*\.app/", self.rootDir)
+    isBundle = False
     if match:
       # '/Users/eisneim/www/pyProject/audioGenerator/python/dist/cytrontts.app/'
       self.rootDir = self.rootDir[0:match.end()]
       self.configPath = join(self.rootDir, "Contents/Resources/config.json")
+      isBundle = True
     else:
       # check if config.json exists
       self.configPath = join(self.rootDir, "config.json")
@@ -36,6 +38,8 @@ class CytronConfig:
     if not self.data["cuid"]:
       # https://docs.python.org/3/library/uuid.html
       self.data["cuid"] = str(uuid.uuid1())
+
+    self.data["isBundle"] = isBundle
 
   def save(self):
     jsonStr = json.dumps(self.data)

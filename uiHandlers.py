@@ -19,7 +19,8 @@ def get_token_err(ctrl, payload, msg):
 def post_request_error(ctrl, payload, msg):
   log.info("post_request_error: {}".format(payload))
   messagebox.showerror("error", payload)
-
+  ctrl.frames["MainPage"].showRequesting(True)
+  ctrl.frames["MainPage"]._progress.grid_remove()
 
 def post_request_done(ctrl, payload, msg):
   log.info("post_request_done")

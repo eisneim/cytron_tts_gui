@@ -70,7 +70,11 @@ def postRequest(ctx, payload, action):
       per=payload["per"],
       vol=payload["vol"])
     if err:
-      return (err, False)
+      ctx.queue.put({
+        "type": "POST_REQUEST_ERROR",
+        "payload": err
+      })
+      return
     # should save to mp3 file
     # http://stackoverflow.com/questions/13137817/how-to-download-image-using-requests
     with open(filePath, "wb") as fout:
@@ -88,7 +92,11 @@ def postRequest(ctx, payload, action):
         per=payload["per"],
         vol=payload["vol"])
       if err:
-        return (err, False)
+        ctx.queue.put({
+          "type": "POST_REQUEST_ERROR",
+          "payload": err
+        })
+        return
       # save raw resonponse
       rawResList.append(res)
       ctx.queue.put({

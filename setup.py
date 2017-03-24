@@ -11,7 +11,13 @@ APP = ['cytrontts.py']
 DATA_FILES = []
 OPTIONS = {
   'iconfile': 'resources/icon.icns',
-  'plist': {'CFBundleShortVersionString':'0.1.0'},
+  "argv_emulation": False,
+  'plist': {
+    'CFBundleShortVersionString':'0.1.0',
+    "CFBundleDocumentTypes": [".txt", ".md", ""],
+    "CFBundleGetInfoString": "yo, cytron tts",
+    "CFBundleName": "CytronTTS"
+  },
   'packages': [ 'requests' ],
 }
 

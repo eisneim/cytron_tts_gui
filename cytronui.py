@@ -5,6 +5,7 @@ import logging
 import time
 import os
 from sys import platform
+import traceback
 
 
 from uiHandlers import handlers
@@ -230,10 +231,16 @@ class MainPage(tk.Frame):
   def addTextFromFile(self):
     filePath = fdialog.askopenfilename()
     if not filePath:
+      messagebox.showerror("no file selected")
       return
-    log.debug("input text file: {}".format(filePath))
-    with open(filePath, "r") as fin:
-      text = fin.read()
+    log.info("input text file: {}".format(filePath))
+    try:
+      with open(filePath, "r", encoding="utf-8") as fin:
+        text = fin.read()
+    except Exception as e:
+      messagebox.showerror("error", "error while open: {}".format(filePath))
+      with open("error.log", "a") as fout:
+        fout.write(traceback.format_exc())
 
     self._text.delete("1.0", "end")
     self._text.insert("end", text)
