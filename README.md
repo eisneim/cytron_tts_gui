@@ -6,7 +6,7 @@ simple text to speech client GUI using Baidu's tts API, currently only supports 
 this simple app is writen in Python3 with tkinter 8.5
 
 ### TODO
- - display progress
+ - other tts backen
 
 dowload latest [release](https://github.com/eisneim/cytron_tts_gui/releases)
 
