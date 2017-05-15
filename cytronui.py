@@ -96,7 +96,7 @@ class ConfigPage(tk.Frame):
     _label = tk.Label(self, text="setting")
     _label.grid(columnspan=2)
 
-    tk.Label(self, text="AppID").grid(row=1, sticky="e")
+    tk.Label(self, text="AppKey").grid(row=1, sticky="e")
     tk.Label(self, text="AppSecret").grid(row=2, sticky="e")
     self._appid = tk.Entry(self)
     self._appid.grid(row=1, column=1, sticky="w")
@@ -106,7 +106,7 @@ class ConfigPage(tk.Frame):
     # set default value
     if self.controller.ctx.config.get("appid"):
       self._appid.configure(text=self.controller.ctx.config.get("appid"))
-      self._appsecret.configure(text=self.controller.ctx.config.get("appid"))
+      self._appsecret.configure(text=self.controller.ctx.config.get("appsecret"))
 
     self._confirm = tk.Button(self, text="Confirm",
       command=self.getToken)
@@ -202,13 +202,18 @@ class MainPage(tk.Frame):
     self._confirm = tk.Button(_rightSection,
       text="Generate Mp3", command=self.sendReuqest)
     self._confirm.grid(row=4, sticky="s", pady=5)
+
+    self._clear = tk.Button(_rightSection,
+      text="Clear", command=self.clearInput)
+    self._clear.grid(row=5, sticky="s", pady=0)
+
     # notify text
     self._sendingLabel = tk.Label(_rightSection, text="Generating...")
-    self._sendingLabel.grid(row=5)
+    self._sendingLabel.grid(row=6)
     self._sendingLabel.grid_remove()
 
     self._progress = tk.Label(_rightSection)
-    self._progress.grid(row=6)
+    self._progress.grid(row=7)
     self._progress.grid_remove()
 
   def showRequesting(self, isDone=False):
@@ -251,6 +256,9 @@ class MainPage(tk.Frame):
 
     tex = "{:.2f}%".format(percentage * 100)
     self._progress.configure(text=tex)
+
+  def clearInput(self):
+    self._text.delete("1.0", "end")
 
   def sendReuqest(self):
     # http://stackoverflow.com/questions/14824163/how-to-get-the-input-from-the-tkinter-text-box-widget
