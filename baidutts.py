@@ -3,7 +3,7 @@ import logging
 
 log = logging.getLogger("cytron")
 
-URL_TOKEN = "https://openapi.baidu.com/oauth/2.0/token?\
+URL_TOKEN = "https://aip.baidubce.com/oauth/2.0/token?\
 grant_type=client_credentials&client_id={}&\
 client_secret={}&"
 
@@ -12,9 +12,10 @@ URL_TARGET = "http://tsn.baidu.com/text2audio"
 LAN = "zh"
 CTP = 1  # client type, web = 1
 CUID = None  # client user id
-SPD = 5  # speed: 0-9
+SPD = 4  # speed: 0-9
 PIT = 5  # pitch: 0-9
 VOL = 5  # volumn: 0-9
+AUE = 3  # "mp3"
 PERSON = 1  # 发音人选择，取值 0-1 ;0 为女声，1 为男声，默认为女声
 
 
@@ -55,7 +56,7 @@ class Baidutts:
     # assert len(tex.encode("utf-8")) < 1024
 
     payload = {
-      "tex": tex,
+      "tex": tex.encode("utf-8"),
       "lan": lan,
       "cuid": cuid,
       "ctp": ctp,
@@ -64,6 +65,7 @@ class Baidutts:
       "per": per,
       "vol": vol,
       "tok": tok,
+      "aue": AUE,
     }
     # data will automatically be form-encoded when the request is made
     try:
@@ -72,7 +74,9 @@ class Baidutts:
       msg = "Connection timeout please retry"
       return (msg, None)
 
-    ctype = rr.headers["content-type"]
+    print("__ resonponse header", rr.status_code)
+
+    ctype = rr.headers.get("content-type", '')
     isJson = ctype.find("json") >= 0
     jsonRes = { "err_no": None, "err_msg": "unknow Error" }
     if isJson:

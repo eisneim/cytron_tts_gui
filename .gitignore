@@ -3,6 +3,7 @@ node_modules
 .nodemonignore
 .sass-cache/
 .bower-*/
+.eggs
 config.json
 output/
 build/

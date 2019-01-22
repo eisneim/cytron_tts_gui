@@ -5,8 +5,9 @@ from os.path import join
 import uuid
 import re
 
-ttsInstance = None
 
+ttsInstance = None
+MAX_TEX_LEN = 2048
 
 def end_app(ctx, payload, _):
   ctx.running = 0
@@ -61,7 +62,7 @@ def postRequest(ctx, payload, action):
   fileName = str(uuid.uuid1()) + ".mp3"
   filePath = join(payload["dest"], fileName)
   # check if text is too long, if so, split it
-  if len(tex.encode("utf-8")) < 1024:
+  if len(tex.encode("utf-8")) < MAX_TEX_LEN:
     err, res = ttsInstance.t2a(payload["text"],
       token,
       cuid=cuid,
@@ -81,7 +82,7 @@ def postRequest(ctx, payload, action):
       # res.raw.decode_content = True
       shutil.copyfileobj(res.raw, fout)
   else:
-    textList = splitText(tex, 1024)
+    textList = splitText(tex, MAX_TEX_LEN)
     rawResList = []
     for idx, tx in enumerate(textList):
       err, res = ttsInstance.t2a(tx,
@@ -91,14 +92,33 @@ def postRequest(ctx, payload, action):
         pit=payload["pit"],
         per=payload["per"],
         vol=payload["vol"])
+      time.sleep(1)
+
+      # save raw resonponse if respons is 200
+      reqeustSuccess = res and res.status_code == 200
+      if reqeustSuccess:
+        rawResList.append(res)
+      else:
+        while not reqeustSuccess:
+          print(" 400 error, retry")
+          err, res = ttsInstance.t2a(tx,
+            token,
+            cuid=cuid,
+            spd=payload["spd"],
+            pit=payload["pit"],
+            per=payload["per"],
+            vol=payload["vol"])
+          reqeustSuccess = res and res.status_code == 200
+          if reqeustSuccess:
+            rawResList.append(res)
+
       if err:
         ctx.queue.put({
           "type": "POST_REQUEST_ERROR",
           "payload": err
         })
         return
-      # save raw resonponse
-      rawResList.append(res)
+
       ctx.queue.put({
         "type": "POST_REQUEST_PROGRESS",
         "payload": (idx + 1) / len(textList),
@@ -108,7 +128,7 @@ def postRequest(ctx, payload, action):
       # res.raw.decode_content = True
       # shutil.copyfileobj(binary, fout)
       for res in rawResList:
-        for chunk in res.iter_content(chunk_size=1024):
+        for chunk in res.iter_content(chunk_size=MAX_TEX_LEN):
           fout.write(chunk)
 
   ctx.queue.put({

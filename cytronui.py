@@ -172,7 +172,7 @@ class MainPage(tk.Frame):
     _lframe.grid(row=3)
 
     self._spd = tk.Scale(_lframe, from_=0, to=10, orient="horizontal", label="speed")
-    self._spd.set(5)
+    self._spd.set(4)
     self._spd.grid(row=1, columnspan=2)
 
     self._pit = tk.Scale(_lframe, from_=0, to=10, orient="horizontal", label="pitch")
