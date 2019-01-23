@@ -67,8 +67,8 @@ class CytronTTS:
 
   def showAbout(self):
     messagebox.showinfo("about CytronTTS", """
-version: 0.1.0
-auhtor: Eisneim Terry<eisneim1@gmail.com>
+version: 0.2.0
+author: 特里@视频大拍档<0@zexeo.com>
 github: https://github.com/eisneim/cytron_tts_gui
       """)
 
